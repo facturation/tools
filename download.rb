@@ -147,7 +147,7 @@ class Backup
   def id_key_for(type)
     case type
     when :quote, :quotes then 'quote_ref'
-    else 'invoice_ref'
+    else 'full_invoice_ref'
     end
   end
 end
