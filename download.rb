@@ -35,7 +35,7 @@ require 'fileutils'
 require 'yaml'
 
 class Backup
-  attr_accessor :max_pages, :config
+  attr_accessor :max_pages, :config, :firm
 
   def initialize
     if File.exists?("./config.yml")
@@ -48,28 +48,24 @@ class Backup
 
   def call
     return false unless config_ok?
-    verify_directory
-    download_all(:quotes)
-    download_all(:invoices)
+    firms_list.each do |entry|
+      self.firm = entry
+      verify_directory
+      download_all(:quotes)
+      download_all(:invoices)
+    end
+    true
   end
 
   private
-
-  def verify_directory
-    # check if DIRECTORY exists and create it if needed
-    FileUtils.mkdir_p(base_path)
-    FileUtils.mkdir_p("#{base_path}/invoices")
-    FileUtils.mkdir_p("#{base_path}/quotes")
-    puts "--> Created #{base_path}"
-  end
 
   def config_ok?
     unless config.is_a?(Hash)
       $stderr.puts "Invalid config file"
       return false
     end
-    if config[:firm_id].to_i == 0
-      $stderr.puts "Missing firm_id in config file"
+    if config[:firm_id].to_i == 0 && (config[:firms].nil? || !config[:firms].is_a?(Array) || config[:firms].size == 0 )
+      $stderr.puts "Missing firms list in config file"
       return false
     elsif config[:api_id].to_i == 0
       $stderr.puts "Missing api_id in config file"
@@ -77,21 +73,51 @@ class Backup
     elsif config[:api_key].to_s.strip == ''
       $stderr.puts "Missing api_key in config file"
       return false
-    else
-      true
+    elsif config[:directory].empty?
+      $stderr.puts "Missing directory parameter in config file"
+      return false
     end
+    true
   end
 
   def base_path
-    if config[:directory].empty?
-      $stderr.puts "Missing directory parameter in config file"
-      exit
-    end
-    @base_path ||= File.join(File.expand_path(config[:directory]), config[:firm_id].to_s).to_s
+    @base_path ||= {}
+    @base_path[firm[:firm_id]] ||= File.join(File.expand_path(config[:directory]), firm[:subdirectory].to_s).to_s
+    @base_path[firm[:firm_id]]
   end
 
   def base_url
-    @base_url ||= "https://#{config[:api_id]}:#{config[:api_key]}@www.facturation.pro/firms/#{config[:firm_id]}"
+    @base_url ||= {}
+    @base_url[firm[:firm_id]] ||= begin
+      host = config[:host] || "wwww.facturation.pro"
+      protocol = config[:protocol] || "https"
+      "#{protocol}://#{config[:api_id]}:#{config[:api_key]}@#{host}/firms/#{firm[:firm_id]}"
+    end
+    @base_url[firm[:firm_id]]
+  end
+
+  def firms_list
+    if config[:firm_id].to_i>0
+      [ { firm_id: config[:firm_id], subdirectory: nil } ]
+    else
+      config[:firms].collect do | entry |
+        if entry[:firm_id].to_i == 0 || entry[:subdirectory].to_s == ''
+          $stderr.puts "Invalid firm entry, you must provide both firm_id and subdirectory : #{entry.inspect}"
+          exit
+        else
+          entry
+        end
+      end
+    end
+  end
+
+  def verify_directory
+    # check if DIRECTORY exists and create it if needed
+    path = base_path
+    FileUtils.mkdir_p(path)
+    FileUtils.mkdir_p("#{path}/invoices/json")
+    FileUtils.mkdir_p("#{path}/quotes/json")
+    puts "--> Created #{path}"
   end
 
   def download_all(type)
@@ -107,8 +133,9 @@ class Backup
   end
 
   def retrieve_bills(type, page)
-    puts "--> Retrieve #{type} list - page #{page}"
-    url = "#{base_url}/#{type}.json?order=created&sort=asc&page=#{page}"
+    puts "--> Firm #{firm[:firm_id]} - Retrieve #{type} list - page #{page}"
+    url = "#{base_url}/#{type}.json?order=created&sort=desc&page=#{page}"
+    puts url
     res = RestClient.get(url, { accept: :json, user_agent: USER_AGENT })
     if page == 1 && res.headers[:x_pagination]
       self.max_pages = JSON.parse(res.headers[:x_pagination])['total_pages']
