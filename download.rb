@@ -1,21 +1,23 @@
 #!/usr/bin/env ruby
+#
 # SCRIPT FOURNIT SANS AUCUNE GARANTIE D'AUCUNE SORTE DE LA PART DE FACTURATION.PRO
 # FACTURATION.PRO NE POURRA ËTRE TENU POUR RESPONSABLE D'UN QUELCONQUE DYSFONCTIONNEMENT LIE A L'UTILISATION
 # DE CE SCRIPT.
 # CE SCRIPT VOUS PERMET UNIQUEMENT D'AVOIR UNE BASE POUR VOS DEVELOPPEMENTS SIMILAIRES
 #
-# Ce script permet de télécharger tous les devis et factures générés via notre outil de manière incrémentale.
-# Remarques:
-# * les documents déjà téléchargés ne sont pas retéléchargés
-# * les factures externes ne peuvent pas être générées par notre outil donc ne sont pas téléchargeables
-# * les brouillons ne sont pas téléchargés
+# A propos :
+# Ce script permet de télécharger tous les devis et factures générés via notre outil, de manière incrémentale.
 #
-# Configuration
+# Remarques :
+# * les documents déjà téléchargés ne sont pas retéléchargés
+# * les factures externes ne peuvent pas être générées par notre outil et donc ne sont pas téléchargeables
+# * les brouillons ne sont jamais téléchargés
+#
+# Configuration :
 # copier le fichier config.sample.yml, le remplir avec vos informations d'authentification,
 # et enregistrer ce fichier sous le nom config.yml
 #
-#
-# usage :
+# Usage :
 # ruby ./download.rb
 #
 
