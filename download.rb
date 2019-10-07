@@ -45,6 +45,7 @@ class Backup
   end
 
   def call
+    return false unless config_ok?
     verify_directory
     download_all(:quotes)
     download_all(:invoices)
@@ -60,28 +61,35 @@ class Backup
     puts "--> Created #{base_path}"
   end
 
+  def config_ok?
+    unless config.is_a?(Hash)
+      $stderr.puts "Invalid config file"
+      return false
+    end
+    if config[:firm_id].to_i == 0
+      $stderr.puts "Missing firm_id in config file"
+      return false
+    elsif config[:api_id].to_i == 0
+      $stderr.puts "Missing api_id in config file"
+      return false
+    elsif config[:api_key].to_s.strip == ''
+      $stderr.puts "Missing api_key in config file"
+      return false
+    else
+      true
+    end
+  end
+
   def base_path
     if config[:directory].empty?
       $stderr.puts "Missing directory parameter in config file"
       exit
     end
-    @base_path ||= File.expand_path(config[:directory])
+    @base_path ||= File.join(File.expand_path(config[:directory]), config[:firm_id].to_s).to_s
   end
 
   def base_url
-    @base_url ||= begin
-      if config[:api_id].to_i == 0
-        $stderr.puts "Missing api_id in config file"
-        exit
-      elsif config[:firm_id].to_i == 0
-        $stderr.puts "Missing firm_id in config file"
-        exit
-      elsif config[:api_key].to_s == ''
-        $stderr.puts "Missing api_key in config file"
-        exit
-      end
-      "https://#{config[:api_id]}:#{config[:api_key]}@www.facturation.pro/firms/#{config[:firm_id]}"
-    end
+    @base_url ||= "https://#{config[:api_id]}:#{config[:api_key]}@www.facturation.pro/firms/#{config[:firm_id]}"
   end
 
   def download_all(type)
@@ -107,7 +115,7 @@ class Backup
   end
 
   def download_bill(type, item)
-    filename = "#{item['full_invoice_ref']}.pdf"
+    filename = "#{item[id_key_for(type)]}.pdf"
     path = File.join(base_path, type.to_s, filename)
     if item['draft']
       # we don't retrieve draft
@@ -120,17 +128,25 @@ class Backup
       puts "* Skipped #{filename} : already exists"
       return false
     end
-
+    url = "#{base_url}/#{type}/#{item['id']}.pdf?original=1"
     raw = RestClient::Request.execute(
-    method: :get,
-    url: "#{base_url}/invoices/#{item['id']}.pdf?original=1",
-    raw_response: true,
-    headers: { user_agent: USER_AGENT }
+      method: :get,
+      url: url,
+      raw_response: true,
+      headers: { user_agent: USER_AGENT }
     )
     puts "* Saved #{filename} : #{raw.file.size} bytes"
     FileUtils.mv(raw.file.path, path)
     sleep(1) # we dont want to hammer the API because of quota check
     true
+  end
+
+
+  def id_key_for(type)
+    case type
+    when :quote, :quotes then 'quote_ref'
+    else 'invoice_ref'
+    end
   end
 end
 
