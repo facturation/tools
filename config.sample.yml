@@ -1,6 +1,7 @@
-# les informations suivantes sont à récupérer dans votre compte
+# Les informations suivantes sont à récupérer dans votre compte :
 # https://www.facturation.pro/account/api
-# une fois les informations saisies, enregistrer ce fichier sous le nom config.yml
+#
+# Une fois les informations saisies, enregistrer ce fichier sous le nom config.yml
 ---
   :api_id: 0
   :api_key: "XXX"
