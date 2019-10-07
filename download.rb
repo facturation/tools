@@ -80,7 +80,7 @@ class Backup
         $stderr.puts "Missing api_key in config file"
         exit
       end
-      "http://#{config[:api_id]}:#{config[:api_key]}@www.facturation.pro/firms/#{config[:firm_id]}"
+      "https://#{config[:api_id]}:#{config[:api_key]}@www.facturation.pro/firms/#{config[:firm_id]}"
     end
   end
 
