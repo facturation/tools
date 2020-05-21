@@ -96,7 +96,7 @@ class Backup
   def base_url
     @base_url ||= {}
     @base_url[firm[:firm_id]] ||= begin
-      host = config[:host] || "wwww.facturation.pro"
+      host = config[:host] || "www.facturation.pro"
       protocol = config[:protocol] || "https"
       "#{protocol}://#{config[:api_id]}:#{config[:api_key]}@#{host}/firms/#{firm[:firm_id]}"
     end
