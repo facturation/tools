@@ -41,9 +41,16 @@ class Backup
     if File.exists?("./config.yml")
       self.config = YAML.load_file("./config.yml").each_with_object({}) { |(k,v), h| h[k.to_sym] = v }
     else
+      self.config = {}
+      self.config[:firm_id] = ENV['FIRM_ID']
+      self.config[:api_id] = ENV['API_ID']
+      self.config[:api_key] = ENV['API_KEY']
+    end
+    if config.blank?
       $stderr.puts "Errror: config.yml is missing"
       exit
     end
+    self.config[:directory] ||= './downloads'
   end
 
   def call
@@ -115,8 +122,10 @@ class Backup
     # check if DIRECTORY exists and create it if needed
     path = base_path
     FileUtils.mkdir_p(path)
-    FileUtils.mkdir_p("#{path}/invoices/json")
-    FileUtils.mkdir_p("#{path}/quotes/json")
+    FileUtils.mkdir_p("#{path}/invoices")
+    FileUtils.mkdir_p("#{path}/quotes")
+    FileUtils.mkdir_p("#{path}/json/invoices")
+    FileUtils.mkdir_p("#{path}/json/quotes")
     puts "--> Created #{path}"
   end
 
@@ -127,7 +136,10 @@ class Backup
       page += 1
       data = retrieve_bills(type, page)
       break if data.empty? # no more items
-      data.each { |item| download_bill(type, item) }
+      data.each do |item|
+        res = download_bill(type, item)
+        save_json(type, item) if res
+      end
     end
     puts "--> End #{type} download"
   end
@@ -135,7 +147,6 @@ class Backup
   def retrieve_bills(type, page)
     puts "--> Firm #{firm[:firm_id]} - Retrieve #{type} list - page #{page}"
     url = "#{base_url}/#{type}.json?order=created&sort=desc&page=#{page}"
-    puts url
     res = RestClient.get(url, { accept: :json, user_agent: USER_AGENT })
     if page == 1 && res.headers[:x_pagination]
       self.max_pages = JSON.parse(res.headers[:x_pagination])['total_pages']
@@ -152,10 +163,10 @@ class Backup
       return false
     elsif item['external']
       puts "* Skipped #{filename} : external invoice"
-      return false
+      return true
     elsif File.exists?(path)
       puts "* Skipped #{filename} : already exists"
-      return false
+      return true
     end
     url = "#{base_url}/#{type}/#{item['id']}.pdf?original=1"
     raw = RestClient::Request.execute(
@@ -170,6 +181,16 @@ class Backup
     true
   end
 
+  def save_json(type, item)
+    filename = "#{item['id']}.json"
+    path = File.join(base_path, "json/#{type}", filename)
+    if File.exists?(path)
+      data = JSON.parse(File.read(path))
+      return true if data['updated_at'] == item['updated_at']
+    end
+    puts "* Saved #{filename}"
+    File.open(path, "wb") { |f| f.write(JSON.pretty_generate(item)) }
+  end
 
   def id_key_for(type)
     case type
