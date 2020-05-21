@@ -46,7 +46,7 @@ class Backup
       self.config[:api_id] = ENV['API_ID']
       self.config[:api_key] = ENV['API_KEY']
     end
-    if config.blank?
+    if config.empty?
       $stderr.puts "Errror: config.yml is missing"
       exit
     end
