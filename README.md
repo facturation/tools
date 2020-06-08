@@ -19,4 +19,4 @@ ruby ./download.rb
 
 # Docker
 
-Le sous-repertoire docker contient un fichier pour docker permettant d'exécuter le script de téléchargement via Docker, notamment pour les utilisateurs sous Windows qui n'ont pas accès en standard à ruby.
+Il est possible d'executer ce script via Docker. La dernière version est toujours disponible sur (Docker Hub)[https://hub.docker.com/repository/docker/facturation/download]
