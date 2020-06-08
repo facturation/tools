@@ -1,6 +1,6 @@
 Cette image docker permet d'executer le script de téléchargement sur une machine ne disposant pas de ruby
 
-1) installer Docker Desktop
+1) installer [Docker Desktop](https://www.docker.com/products/docker-desktop)
 
 2) ouvrir une fenêtre de ligne de commande
 
