@@ -19,4 +19,5 @@ ruby ./download.rb
 
 # Docker
 
-Il est possible d'executer ce script via Docker. La dernière version est toujours disponible sur (Docker Hub)[https://hub.docker.com/repository/docker/facturation/download]
+Il est possible d'executer ce script via Docker.
+La documentation et l'image sont sur [Docker Hub](https://hub.docker.com/repository/docker/facturation/download)

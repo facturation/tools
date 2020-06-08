@@ -1,6 +1,6 @@
 # Utilisation
 
-Le plus simple est d'utiliser l'image disponible sur (Docker Hub)[https://hub.docker.com/repository/docker/facturation/download]
+Le plus simple est d'utiliser l'image disponible sur [Docker Hub](https://hub.docker.com/repository/docker/facturation/download)
 
 # Personnalisation
 
