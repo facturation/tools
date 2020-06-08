@@ -6,7 +6,9 @@ copier le fichier config.sample.yml, le remplir avec vos informations d'authenti
 et enregistrer ce fichier sous le nom config.yml
 
 # Usage :
-```ruby ./download.rb```
+```shell
+ruby ./download.rb
+```
 
 # Remarques :
 
