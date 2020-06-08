@@ -1,5 +1,12 @@
 Ce script permet de télécharger tous les devis et factures générés via notre outil, de manière incrémentale.
 
+# Configuration :
+
+copier le fichier config.sample.yml, le remplir avec vos informations d'authentification,
+et enregistrer ce fichier sous le nom config.yml
+
+# Usage :
+```ruby ./download.rb```
 
 # Remarques :
 
@@ -7,14 +14,6 @@ Ce script permet de télécharger tous les devis et factures générés via notr
 * les factures externes ne peuvent pas être générées par notre outil et donc ne sont pas téléchargeables
 * les brouillons ne sont jamais téléchargés
 
-# Configuration :
-
-copier le fichier config.sample.yml, le remplir avec vos informations d'authentification,
-et enregistrer ce fichier sous le nom config.yml
-
-
-# Usage :
-```ruby ./download.rb```
 
 # Docker
 
